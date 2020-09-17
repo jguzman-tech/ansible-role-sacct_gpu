@@ -145,10 +145,19 @@ def main():
                         help='The maximum time (in days) for which the gpu stats of a job will be stored')
     args = parser.parse_args()
 
+    logfile = open(args.logfile, 'a+')
+
+    runfile_path = '/tmp/gpustats.run'
+    
+    if os.path.exists(runfile_path):
+        logfile.write(str(datetime.now().replace(microsecond=0).isoformat()) +
+                      " WARNING: /tmp/gpustats.run already exists, aborting run...\n")
+        exit(0)
+
+    open(runfile_path, 'wb')
+
     if args.dir_path[-1] != '/':
         args.dir_path += '/'
-
-    logfile = open(args.logfile, 'a+')
 
     try:
         if not args.nosleep:
@@ -197,9 +206,11 @@ def main():
 
     end_time = time.time()
     if end_time - start_time > 55.0:
-        logfile.write("WARNING: runtime was longer than expected at " +
+        logfile.write(str(datetime.now().replace(microsecond=0).isoformat()) + " WARNING: runtime was longer than expected at " +
                       str(end_time - start_time) +
                       " seconds\n")
+
+    os.remove(runfile_path)
 
 if __name__ == '__main__':
     main()
